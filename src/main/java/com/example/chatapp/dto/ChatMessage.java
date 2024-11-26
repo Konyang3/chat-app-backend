@@ -1,11 +1,16 @@
 package com.example.chatapp.dto;
 
 public class ChatMessage {
+
     private String sender;
     private String content;
-    private String roomId;
+    private MessageType type;
 
-    // Getter and Setter for sender
+    public enum MessageType {
+        CHAT, JOIN, LEAVE
+    }
+
+    // Getter 및 Setter
     public String getSender() {
         return sender;
     }
@@ -14,7 +19,6 @@ public class ChatMessage {
         this.sender = sender;
     }
 
-    // Getter and Setter for content
     public String getContent() {
         return content;
     }
@@ -23,12 +27,11 @@ public class ChatMessage {
         this.content = content;
     }
 
-    // Getter and Setter for roomId
-    public String getRoomId() {
-        return roomId;
+    public MessageType getType() {
+        return type;
     }
 
-    public void setRoomId(String roomId) {
-        this.roomId = roomId;
+    public void setType(MessageType type) {
+        this.type = type;
     }
 }

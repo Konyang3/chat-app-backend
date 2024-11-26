@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        #chat-box { max-width: 600px; margin: 50px auto; }
+        #messages { height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; }
+        #input-container { display: flex; margin-top: 10px; }
+        #message-input { flex: 1; padding: 10px; border: 1px solid #ccc; }
+        #send-button { padding: 10px; border: none; background: #007bff; color: #fff; }
+    </style>
+</head>
+<body>
+<div id="chat-box">
+    <div id="messages"></div>
+    <div id="input-container">
+        <input type="text" id="message-input" placeholder="Type your message...">
+        <button id="send-button">Send</button>
+    </div>
+</div>
+
+<script>
+    let stompClient = null;
+
+    // WebSocket 연결 설정
+    function connect() {
+        const socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, () => {
+            console.log('Connected to WebSocket');
+
+            // 메시지 수신 시 동작
+            stompClient.subscribe('/topic/public', (message) => {
+                showMessage(JSON.parse(message.body));
+            });
+        });
+    }
+
+    // 메시지 출력
+    function showMessage(message) {
+        const messagesDiv = document.getElementById('messages');
+        const messageElement = document.createElement('p');
+
+        messageElement.textContent = `[${message.sender}] ${message.content}`;
+        messagesDiv.appendChild(messageElement);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // 메시지 전송
+    document.getElementById('send-button').addEventListener('click', () => {
+        const input = document.getElementById('message-input');
+        const message = {
+            sender: 'User',
+            content: input.value,
+            type: 'CHAT'
+        };
+
+        stompClient.send('/app/chat.send', {}, JSON.stringify(message));
+        input.value = '';
+    });
+
+    // API 요청을 통해 채팅방 목록 가져오기
+    async function fetchChatRooms() {
+        const token = localStorage.getItem('jwt');
+        const response = await fetch('/api/chatrooms', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`  // JWT 토큰을 Authorization 헤더에 포함
+            }
+        });
+
+        if (response.ok) {
+            const rooms = await response.json();
+            console.log(rooms); // 채팅방 목록 출력
+        } else {
+            console.error('Error fetching chat rooms');
+        }
+    }
+
+    // WebSocket 연결 시작
+    connect();
+
+    // 채팅방 목록 가져오기
+    fetchChatRooms();
+</script>
+</body>
+</html>

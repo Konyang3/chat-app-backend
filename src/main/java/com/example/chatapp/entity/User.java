@@ -3,8 +3,9 @@ package com.example.chatapp.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "users") // 테이블 이름을 "users"로 변경
+@Table(name = "users")
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -15,7 +16,21 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    // Getter and Setter
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    // 기본 생성자
+    public User() {}
+
+    // 전체 필드 생성자
+    public User(Long id, String username, String password, String email) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.email = email;
+    }
+
+    // Getters & Setters
     public Long getId() {
         return id;
     }
@@ -38,5 +53,13 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
