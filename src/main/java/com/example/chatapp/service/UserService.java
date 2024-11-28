@@ -1,39 +1,56 @@
 package com.example.chatapp.service;
 
-import com.example.chatapp.entity.User;
+import com.example.chatapp.dto.Response;
+import com.example.chatapp.entity.UserEntity;
 import com.example.chatapp.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 public class UserService {
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+    private UserRepository userRepository;
+
+    public Response<?> findUserBySession(HttpServletRequest request) {
+        Long userId = (Long) request.getSession().getAttribute("userId");
+        if (userId == null) {
+            return new Response<>("로그인 중이 아님", HttpStatus.UNAUTHORIZED);
+        }
+        Optional<UserEntity> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            return new Response<>(userOpt.get(), HttpStatus.OK);
+        } else {
+            return new Response<>(userId + "번 유저아이디 찾을수 없음", HttpStatus.NOT_FOUND);
+        }
     }
 
-    public User save(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
+
+    public Response<Optional<UserEntity>> findById(Long id) {
+        Optional<UserEntity> user = userRepository.findById(id);
+        if (user.isPresent()) {
+            return new Response<>(user, HttpStatus.OK);
+        } else {
+            return new Response<>(Optional.empty(), HttpStatus.NOT_FOUND);
+        }
     }
 
-    public User findByUsername(String username) {
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        return userOptional.orElse(null); // Optional을 처리하여 User 반환
+    public Response<List<UserEntity>> findAllUsers() {
+        Iterable<UserEntity> userIterable = userRepository.findAll();
+        List<UserEntity> users = StreamSupport.stream(userIterable.spliterator(), false)
+                .collect(Collectors.toList());
+        return new Response<>(users, HttpStatus.OK);
     }
 
-    // register 메서드 추가
-    public User register(String username, String password) {
-        User user = new User();
-        user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(password));
-        return userRepository.save(user);
+    public UserEntity findUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
     }
 }
