@@ -27,9 +27,15 @@ public class UserEntity {
     private String password;
 
     @ElementCollection
-    @CollectionTable()
+    @CollectionTable(
+            name = "user_sub_codes",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
     @Column(name = "sub_code")
     private List<Integer> sub_code;
+
+    @Column(nullable = false)
+    private String role;
 
     public UserEntity(String username, String student_number, String password, List<Integer> sub_code) {
         this.username = username;

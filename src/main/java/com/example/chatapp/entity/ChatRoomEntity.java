@@ -15,12 +15,12 @@ public class ChatRoomEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roomId;
 
-    @Column(nullable = false, unique = true)
-    private int subCode; // 과목 코드
+    @Column(nullable = false)
+    private String roomName;
 
     @Column(nullable = false)
-    private String roomName; // 채팅방 이름
+    private int subCode;
 
     @Column(nullable = false)
-    private Long creatorId; // 채팅방 생성자 ID
+    private Long creatorId;
 }

@@ -1,11 +1,13 @@
 package com.example.chatapp.service;
 
 import com.example.chatapp.entity.ChatRoomEntity;
+import com.example.chatapp.entity.UserEntity;
 import com.example.chatapp.repository.ChatRoomRepository;
+import com.example.chatapp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -13,10 +15,18 @@ public class ChatRoomService {
     @Autowired
     private ChatRoomRepository chatRoomRepository;
 
+    @Autowired
+    private UserService userService;
+
     /**
      * 채팅방 생성
      */
     public ChatRoomEntity createChatRoom(String roomName, int subCode, Long creatorId) {
+        UserEntity creator = userService.findUserById(creatorId);
+        if (!"Professor".equals(creator.getRole())) {
+            throw new RuntimeException("Only professors can create rooms");
+        }
+
         ChatRoomEntity chatRoom = ChatRoomEntity.builder()
                 .roomName(roomName)
                 .subCode(subCode)

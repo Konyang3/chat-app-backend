@@ -32,7 +32,6 @@ public class UserService {
         }
     }
 
-
     public Response<Optional<UserEntity>> findById(Long id) {
         Optional<UserEntity> user = userRepository.findById(id);
         if (user.isPresent()) {
@@ -52,5 +51,24 @@ public class UserService {
     public UserEntity findUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+    }
+
+    public UserEntity registerUser(String username, String studentNumber, String password, List<Integer> subCode) {
+        String role;
+        if (studentNumber.length() == 6) {
+            role = "Professor";
+        } else if (studentNumber.length() == 8) {
+            role = "Student";
+        } else {
+            throw new IllegalArgumentException("Invalid student number length");
+        }
+
+        UserEntity user = new UserEntity(username, studentNumber, password, subCode);
+        user.setRole(role);
+
+        // 사용자 저장 로직 추가
+        userRepository.save(user);
+
+        return user;
     }
 }
